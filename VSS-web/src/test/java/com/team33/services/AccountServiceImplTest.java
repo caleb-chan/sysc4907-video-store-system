@@ -20,9 +20,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -30,8 +33,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:/test/service/service-test.xml"})
+@TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true) 
+@Transactional
 public class AccountServiceImplTest {
 
+    @Autowired
     private AccountServiceImpl accountServiceImpl;
 
     public AccountServiceImplTest() {
@@ -47,8 +53,6 @@ public class AccountServiceImplTest {
 
     @Before
     public void setUp() {
-        this.accountServiceImpl = new AccountServiceImpl();
-        this.accountServiceImpl.setAccountDao(new AccountDaoImplTestStub());
     }
 
     @After
@@ -174,7 +178,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testRegisterAccount_ValidUsernameNotInDB() {
         try {
-            this.accountServiceImpl.registerAccount("Hello", "World");
+            this.accountServiceImpl.registerAccount("World", "Hello");
         } catch (RegistrationException ex) {
             fail("RegistrationException should not be thrown");
         }
@@ -184,7 +188,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testRegisterAccount_NullUsername() {
         try {
-            this.accountServiceImpl.registerAccount(null, "World");
+            this.accountServiceImpl.registerAccount(null, "Hello");
         } catch (RegistrationException ex) {
             assertEquals(ex.getLocalizedMessage(), "Registration Failed");
         }
@@ -195,7 +199,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testRegisterAccount_BlankUsername() {
         try {
-            this.accountServiceImpl.registerAccount("", "World");
+            this.accountServiceImpl.registerAccount("", "Hello");
         } catch (RegistrationException ex) {
             assertEquals(ex.getLocalizedMessage(), "Registration Failed");
         }
@@ -206,7 +210,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testRegisterAccount_InvalidUsername() {
         try {
-            this.accountServiceImpl.registerAccount("People", "World");
+            this.accountServiceImpl.registerAccount("Hello", "World");
         } catch (RegistrationException ex) {
             fail("RegistrationException should not be thrown");
         }
@@ -216,7 +220,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testRegisterAccount_NullPassword() {
         try {
-            this.accountServiceImpl.registerAccount("Hello", null);
+            this.accountServiceImpl.registerAccount("World", null);
         } catch (RegistrationException ex) {
             assertEquals(ex.getLocalizedMessage(), "Registration Failed");
         }
@@ -227,22 +231,13 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testRegisterAccount_BlankPassword() {
         try {
-            this.accountServiceImpl.registerAccount("Hello", "");
+            this.accountServiceImpl.registerAccount("World", "");
         } catch (RegistrationException ex) {
             assertEquals(ex.getLocalizedMessage(), "Registration Failed");
         }
         fail("RegistrationException was not thrown");
     }
 
-    @Test
-    @Rollback(true)
-    public void testRegisterAccount_InavlidUsername() {
-        try {
-            this.accountServiceImpl.registerAccount("Hello", "People");
-        } catch (RegistrationException ex) {
-            fail("RegistrationException should not be thrown");
-        }
-    }
 
     @Test
     @Rollback(true)
@@ -282,12 +277,12 @@ public class AccountServiceImplTest {
     public void testGetAccount_ValidId() {
         Account account = null;
         try {
-            account = this.accountServiceImpl.getAccount(0);
+            account = this.accountServiceImpl.getAccount(1);
         } catch (DataAccessException e) {
             fail("DataAccessException should not be thrown");
         }
         assertNotNull(account);
-        assertEquals(account.getId().intValue(), 0);
+        assertEquals(account.getId().intValue(), 1);
     }
 
     @Test
@@ -337,7 +332,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testRemoveAccount_ValidId() {
         try {
-            this.accountServiceImpl.removeAccount(0);
+            this.accountServiceImpl.removeAccount(1);
         } catch (DataAccessException e) {
             fail("DataAccessException should not be thrown");
         }
@@ -347,7 +342,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testAddOrder_ValidId() {
         try {
-            this.accountServiceImpl.addOrder(0, new Orders(0, 0));
+            this.accountServiceImpl.addOrder(1, new Orders(1, 1));
         } catch (DataAccessException e) {
             fail("DataAccessException should not be thrown");
         } catch (AccountNotActivatedException ex) {
@@ -359,7 +354,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testAddOrder_NullId() {
         try {
-            this.accountServiceImpl.addOrder(null, new Orders(0, 0));
+            this.accountServiceImpl.addOrder(null, new Orders(1, 1));
             fail("DataAccessExceptiion should be thrown");
         } catch (DataAccessException e) {
         } catch (AccountNotActivatedException ex) {
@@ -371,7 +366,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testAddOrder_NegId() {
         try {
-            this.accountServiceImpl.addOrder(-1, new Orders(0, 0));
+            this.accountServiceImpl.addOrder(-1, new Orders(1, 1));
             fail("DataAccessExceptiion should be thrown");
         } catch (DataAccessException e) {
         } catch (AccountNotActivatedException ex) {
@@ -383,7 +378,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testAddOrder_InvalidId() {
         try {
-            this.accountServiceImpl.addOrder(9999, new Orders(0, 0));
+            this.accountServiceImpl.addOrder(9999, new Orders(1, 1));
             fail("DataAccessException should be thrown");
         } catch (DataAccessException e) {
         } catch (AccountNotActivatedException ex) {
@@ -395,7 +390,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testAddOrder_NullOrder() {
         try {
-            this.accountServiceImpl.addOrder(0, null);
+            this.accountServiceImpl.addOrder(1, null);
             fail("DataAccessException should be thrown");
         } catch (DataAccessException e) {
         } catch (AccountNotActivatedException ex) {
@@ -407,7 +402,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testAddOrder_InvalidOrder() {
         try {
-            this.accountServiceImpl.addOrder(0, new Orders(9999, 0));
+            this.accountServiceImpl.addOrder(1, new Orders(9999, 1));
             fail("DataAccessException should be thrown");
         } catch (DataAccessException e) {
         } catch (AccountNotActivatedException ex) {
@@ -429,7 +424,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testRemoveOrder_NullId() {
         try{
-            this.accountServiceImpl.removeOrder(null, new Orders(0, 0));
+            this.accountServiceImpl.removeOrder(null, new Orders(1, 1));
             fail("DataAccessException should not be thrown");
         }catch(DataAccessException e){
         }
@@ -439,7 +434,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testRemoveOrder_NegId() {
         try{
-            this.accountServiceImpl.removeOrder(-1, new Orders(0, 0));
+            this.accountServiceImpl.removeOrder(-1, new Orders(1, 1));
             fail("DataAccessException should not be thrown");
         }catch(DataAccessException e){
         }
@@ -449,7 +444,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testRemoveOrder_InvalidId() {
         try{
-            this.accountServiceImpl.removeOrder(9999, new Orders(0, 0));
+            this.accountServiceImpl.removeOrder(9999, new Orders(1, 1));
             fail("DataAccessException should not be thrown");
         }catch(DataAccessException e){
         }
@@ -459,7 +454,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testRemoveOrder_NullOrder() {
         try{
-            this.accountServiceImpl.removeOrder(0, null);
+            this.accountServiceImpl.removeOrder(1, null);
             fail("DataAccessException should not be thrown");
         }catch(DataAccessException e){
         }
@@ -469,7 +464,7 @@ public class AccountServiceImplTest {
     @Rollback(true)
     public void testRemoveOrder_InvalidOrder() {
         try{
-            this.accountServiceImpl.removeOrder(0, new Orders(0, 9999));
+            this.accountServiceImpl.removeOrder(1, new Orders(1, 9999));
             fail("DataAccessException should not be thrown");
         }catch(DataAccessException e){
         }

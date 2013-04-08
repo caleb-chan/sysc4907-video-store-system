@@ -22,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -29,6 +31,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:/test/service/service-test.xml"})
+@TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true) 
+@Transactional
 public class OrderServiceImplTest {
 
     @Autowired
@@ -64,7 +68,15 @@ public class OrderServiceImplTest {
     @Test
     public void testIsActivated_ValidId() {
         try {
-            assertTrue(this.orderServiceImpl.isActivated(0));
+            assertTrue(this.orderServiceImpl.isActivated(1));
+        } catch (AccountNotActivatedException e) {
+            fail("AccountNotActivatedException should not be thrown");
+        }
+    }
+    @Test
+    public void testIsActivated_ValidId_NotActivated() {
+        try {
+            assertFalse(this.orderServiceImpl.isActivated(2));
         } catch (AccountNotActivatedException e) {
             fail("AccountNotActivatedException should not be thrown");
         }

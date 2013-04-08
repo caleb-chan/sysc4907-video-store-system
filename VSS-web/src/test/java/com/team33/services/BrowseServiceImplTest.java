@@ -15,8 +15,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -24,8 +27,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:/test/service/service-test.xml"})
+@TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true) 
+@Transactional
 public class BrowseServiceImplTest {
-    
+    @Autowired
     private BrowseServiceImpl browseServiceImpl;
     
     public BrowseServiceImplTest() {
@@ -41,8 +46,6 @@ public class BrowseServiceImplTest {
     
     @Before
     public void setUp() {
-        browseServiceImpl = new BrowseServiceImpl();
-        browseServiceImpl.setBrowseDao(new BrowseDaoImplTestStub());
     }
     
     @After
@@ -81,7 +84,7 @@ public class BrowseServiceImplTest {
     public void testDisplayVideoDetails_ValidId(){
         VideoInfo info = null;
         try{
-            info = this.browseServiceImpl.displayVideoDetails(0);
+            info = this.browseServiceImpl.displayVideoDetails(1);
         }catch(DataAccessException e){
             fail("DataAccessException should not be thrown");
         }
@@ -119,7 +122,7 @@ public class BrowseServiceImplTest {
     public void testSearchVideos_Genre_ValidGenre(){
         List<VideoInfo> info = null;
         try{
-            info = this.browseServiceImpl.searchVideos(new Genre(0));
+            info = this.browseServiceImpl.searchVideos(new Genre(1));
         }catch(DataAccessException e){
             fail("DataAccessException should not be thrown");
         }
@@ -155,7 +158,7 @@ public class BrowseServiceImplTest {
     public void testSearchVideos_ScreenRating_ValidRating(){
         List<VideoInfo> info = null;
         try{
-            info = this.browseServiceImpl.searchVideos(new ScreenRating(0));
+            info = this.browseServiceImpl.searchVideos(new ScreenRating(1));
         }catch(DataAccessException e){
             fail("DataAccessException should not be thrown");
         }
@@ -201,5 +204,35 @@ public class BrowseServiceImplTest {
         }
         assertNotNull(info);
         assertTrue(info.size() > 0);
+    }
+    
+    public void testSearchLikeVideos_ValidTitle(){
+        List<VideoInfo> info = null;
+        try{
+            info = this.browseServiceImpl.searchLikeVideos("Hello");
+        }catch(DataAccessException e){
+            fail("DataAccessException should not be thrown");
+        }
+        assertNotNull(info);
+        assertTrue(info.size() > 0);
+    }
+    public void testSearchLikeVideos_InvalidTitle(){
+        List<VideoInfo> info = null;
+        try{
+            info = this.browseServiceImpl.searchLikeVideos("People");
+        }catch(DataAccessException e){
+            fail("DataAccessException should not be thrown");
+        }
+        assertNotNull(info);
+        assertTrue(info.isEmpty());
+    }
+    public void testSearchLikeVideos_NullTitle(){
+        List<VideoInfo> info = null;
+        try{
+            info = this.browseServiceImpl.searchLikeVideos(null);
+            fail("DataAccessException should be thrown");
+        }catch(DataAccessException e){
+            
+        }
     }
 }
