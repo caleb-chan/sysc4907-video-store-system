@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Caleb
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:/test/service/service-test.xml"})
+@ContextConfiguration(locations = {"classpath:/test/dao/dao-test.xml"})
 @TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true) 
 @Transactional
 public class VideoPlaybackDaoImplTest {
