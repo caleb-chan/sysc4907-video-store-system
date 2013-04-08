@@ -77,6 +77,23 @@ public class AccountServiceImplTest {
         assertNotNull(account);
         assertEquals(account, 1);
     }
+    
+    @Test
+    @Rollback(true)
+    public void testLoginAccount_ValidUsernameNotActivated() {
+        int account = -9999;
+        try {
+            account = this.accountServiceImpl.loginAccount("NotActivated", "1234");
+            fail("AccountNotActivatedException should be thrown");
+        } catch (AuthenticationException ex) {
+            fail("AuthenticationException should not be thrown");
+        } catch (AccountNotFoundException ex) {
+            fail("AccountNotFoundException should not be thrown");
+        } catch (AccountNotActivatedException ex) {
+        } catch (LoginException ex) {
+            fail("LoginException should not be thrown");
+        }
+    }
 
     @Test
     @Rollback(true)
