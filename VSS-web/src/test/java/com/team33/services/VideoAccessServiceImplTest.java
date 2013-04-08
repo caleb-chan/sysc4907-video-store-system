@@ -15,8 +15,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -24,8 +27,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:/test/service/service-test.xml"})
+@Transactional
 public class VideoAccessServiceImplTest {
     
+    @Autowired
     private VideoAccessServiceImpl videoAccessServiceImpl;
     
     public VideoAccessServiceImplTest() {
@@ -41,8 +46,8 @@ public class VideoAccessServiceImplTest {
     
     @Before
     public void setUp() {
-        this.videoAccessServiceImpl = new VideoAccessServiceImpl();
-        this.videoAccessServiceImpl.setVideoAccessDao(new VideoAccessDaoImplTestStub());
+        //this.videoAccessServiceImpl = new VideoAccessServiceImpl();
+        //this.videoAccessServiceImpl.setVideoAccessDao(new VideoAccessDaoImplTestStub());
     }
     
     @After
@@ -55,7 +60,16 @@ public class VideoAccessServiceImplTest {
     @Test
     public void testIsActivated_ValidId() {
         try{
-            assertTrue(this.videoAccessServiceImpl.isActivated(0));
+            assertTrue(this.videoAccessServiceImpl.isActivated(1));
+        }catch(AccountNotActivatedException e){
+            fail("AccountNotActivatedException should not be thrown");
+        }
+    }
+    
+    @Test
+    public void testIsActivated_ValidId_NotActivated() {
+        try{
+            assertFalse(this.videoAccessServiceImpl.isActivated(2));
         }catch(AccountNotActivatedException e){
             fail("AccountNotActivatedException should not be thrown");
         }
@@ -86,21 +100,34 @@ public class VideoAccessServiceImplTest {
     public void testGetVideoInfo_ValidVideoId() {
         VideoInfo info = null;
         try{
-            info = this.videoAccessServiceImpl.getVideoInfo(0, 0);
+            info = this.videoAccessServiceImpl.getVideoInfo(1, 1);
         }catch(DataAccessException e){
             fail("DataAccessException should not be thrown");
         }catch(AccountNotActivatedException e){
             fail("AccountNotActivatedException should not be thrown");
         }
         assertNotNull(info);
-        assertEquals(info.getId().intValue(), 0);
+        assertEquals(info.getId().intValue(), 1);
+    }
+    
+    @Test
+    public void testGetVideoInfo_ValidVideoId_NotActivated() {
+        VideoInfo info = null;
+        try{
+            info = this.videoAccessServiceImpl.getVideoInfo(1, 2);
+        }catch(DataAccessException e){
+            fail("DataAccessException should not be thrown");
+        }catch(AccountNotActivatedException e){
+            fail("AccountNotActivatedException should not be thrown");
+        }
+        assertNull(info);
     }
     
     @Test
     public void testGetVideoInfo_NegVideoId(){
         VideoInfo info = null;
         try{
-            info = this.videoAccessServiceImpl.getVideoInfo(-1, 0);
+            info = this.videoAccessServiceImpl.getVideoInfo(-1, 1);
             fail("DataAccessException should be thrown");
         }catch(DataAccessException e){
         }catch(AccountNotActivatedException e){
@@ -112,7 +139,7 @@ public class VideoAccessServiceImplTest {
     public void testGetVideoInfo_InvalidVideoId(){
         VideoInfo info = null;
         try{
-            info = this.videoAccessServiceImpl.getVideoInfo(9999, 0);
+            info = this.videoAccessServiceImpl.getVideoInfo(9999, 1);
             fail("DataAccessException should be thrown");
         }catch(DataAccessException e){
         }catch(AccountNotActivatedException e){
@@ -124,7 +151,7 @@ public class VideoAccessServiceImplTest {
     public void testGetVideoInfo_NegAccountId(){
         VideoInfo info = null;
         try{
-            info = this.videoAccessServiceImpl.getVideoInfo(0, -1);
+            info = this.videoAccessServiceImpl.getVideoInfo(1, -1);
             fail("DataAccessException should be thrown");
         }catch(DataAccessException e){
         }catch(AccountNotActivatedException e){
@@ -136,7 +163,7 @@ public class VideoAccessServiceImplTest {
     public void testGetVideoInfo_InvalidAccountId(){
         VideoInfo info = null;
         try{
-            info = this.videoAccessServiceImpl.getVideoInfo(0, 9999);
+            info = this.videoAccessServiceImpl.getVideoInfo(1, 9999);
             fail("DataAccessException should be thrown");
         }catch(DataAccessException e){
         }catch(AccountNotActivatedException e){
@@ -166,6 +193,7 @@ public class VideoAccessServiceImplTest {
             fail("DataAccessException should be thrown");
         }catch(DataAccessException e){
         }catch(AccountNotActivatedException e){
+            fail("AccountNotActivatedException should not be thrown");
         }
     }
     
@@ -173,7 +201,7 @@ public class VideoAccessServiceImplTest {
     public void testGetVideoInfoList_ValidId(){
         List<VideoInfo> info = null;
         try{
-            info = this.videoAccessServiceImpl.getVideoInfoList(0);
+            info = this.videoAccessServiceImpl.getVideoInfoList(1);
         }catch(DataAccessException e){
             fail("DataAccessException should not be thrown");
         }catch(AccountNotActivatedException e){
