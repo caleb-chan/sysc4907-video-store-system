@@ -22,6 +22,10 @@ class ShoppingCart {
         shoppingCartList = new HashMap<ShoppingCartKey, Integer>();
     }
     
+    public HashMap<ShoppingCartKey, Integer> getShoppingCartList(){
+        return this.shoppingCartList;
+    }
+    
     public void addToCart(int videoId, boolean isRented){
         ShoppingCartKey key = new ShoppingCartKey(videoId, isRented);
         if (this.shoppingCartList.containsKey(key)){
