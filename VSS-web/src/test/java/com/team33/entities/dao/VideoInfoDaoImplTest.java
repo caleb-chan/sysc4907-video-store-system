@@ -126,9 +126,9 @@ public class VideoInfoDaoImplTest {
     @Rollback(true)
     public void testGetVideoInfo_ValidId(){
         try{
-            VideoInfo info = this.videoInfoDao.getVideoInfo(0);
+            VideoInfo info = this.videoInfoDao.getVideoInfo(1);
             assertNotNull(info);
-            assertEquals(info.getId().intValue(), 0);
+            assertEquals(info.getId().intValue(), 1);
         }catch(DataAccessException e){
             fail("Exception was thrown : " + e.getLocalizedMessage());
         }
@@ -161,7 +161,7 @@ public class VideoInfoDaoImplTest {
     @Rollback(true)
     public void testSaveVideoInfo_ValidId(){
         try{
-            this.videoInfoDao.saveVideoInfo(0);
+            this.videoInfoDao.saveVideoInfo(1);
         }catch(DataAccessException e){
             fail("Excpetion was thrown : " + e.getLocalizedMessage());
         }
@@ -195,7 +195,7 @@ public class VideoInfoDaoImplTest {
     @Rollback(true)
     public void testRemoveVideoInfo_ValidId(){
         try{
-            this.videoInfoDao.removeVideoInfo(0);
+            this.videoInfoDao.removeVideoInfo(1);
         }catch(DataAccessException e){
             fail("Exception was thrown : " + e.getLocalizedMessage());
         }

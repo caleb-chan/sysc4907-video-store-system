@@ -12,6 +12,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -27,6 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 @TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true) 
 @Transactional
 public class AccessVideoControllerTest {
+    
+    @Autowired
+    private AccessVideoController controller;
     
     public AccessVideoControllerTest() {
     }
@@ -55,7 +59,6 @@ public class AccessVideoControllerTest {
     public void testSetVideoAccessService() {
         System.out.println("setVideoAccessService");
         VideoAccessService videoAccessService = null;
-        AccessVideoController instance = new AccessVideoController();
-        instance.setVideoAccessService(videoAccessService);
+        controller.setVideoAccessService(videoAccessService);
     }
 }

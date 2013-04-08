@@ -249,7 +249,7 @@ public class OrderServiceImplTest {
     @Test
     @Rollback(true)
     public void testAddPurchase_ValidVideoId_NotActivated() {
-        Orders order = new Orders(1, -1);
+        Orders order = new Orders(1, 1);
         try {
             this.orderServiceImpl.addPurchase(1, order, 2);
             fail("AccountNotActivatedException should be thrown");

@@ -5,6 +5,9 @@
 package com.team33.controllers;
 
 import com.team33.form.OrderRequest;
+import com.team33.services.exception.AccountNotActivatedException;
+import com.team33.services.exception.AuthenticationException;
+import com.team33.services.exception.InsufficientFundsException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +20,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -117,19 +121,96 @@ public class OrderControllerTest {
      */
     @Test
     @Rollback(true)
-    public void testCreateOrder() {
+    public void testCreateOrder_ValidOrderRequest() {
         System.out.println("createOrder");
         String referer = "";
-        OrderRequest orderRequest = null;
+        OrderRequest orderRequest = new OrderRequest();
         BindingResult result_2 = null;
-        HttpSession session = null;
-        RedirectAttributes redirectAttributes = null;
-        OrderController instance = new OrderController();
-        String expResult = "";
-        String result = instance.createOrder(referer, orderRequest, result_2, session, redirectAttributes);
+        HttpSession session = new MockHttpSession();
+        ShoppingCart cart = new ShoppingCart();
+        session.setAttribute(LoginController.ACCOUNT_ATTRIBUTE, new Integer(1));
+        session.setAttribute(ShoppingCartController.SHOPPING_CART_ATTRIBUTE_NAME, cart);
+        String expResult = "redirect:/myAccountView.htm";
+        String result = controller.createOrder(referer, orderRequest, result_2, session, redirect);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertNull(session.getAttribute(ShoppingCartController.SHOPPING_CART_ATTRIBUTE_NAME));
+    }
+    
+    @Test
+    @Rollback(true)
+    public void testCreateOrder_ValidOrderRequest_NotActivated() {
+        System.out.println("createOrder");
+        String referer = "";
+        OrderRequest orderRequest = new OrderRequest();
+        BindingResult result_2 = null;
+        HttpSession session = new MockHttpSession();
+        ShoppingCart cart = new ShoppingCart();
+        session.setAttribute(LoginController.ACCOUNT_ATTRIBUTE, new Integer(2));
+        session.setAttribute(ShoppingCartController.SHOPPING_CART_ATTRIBUTE_NAME, cart);
+        String expResult = "redirect:" + referer;
+        String result = controller.createOrder(referer, orderRequest, result_2, session, redirect);
+        assertEquals(expResult, result);
+        assertTrue(redirect.containsAttribute("exception"));
+        assertTrue(redirect.getFlashAttributes().get("exception") instanceof AccountNotActivatedException);
+    }
+    
+    @Test
+    @Rollback(true)
+    public void testCreateOrder_ValidOrderRequest_NoMoney() {
+        System.out.println("createOrder");
+        String referer = "";
+        OrderRequest orderRequest = new OrderRequest();
+        orderRequest.setTotalPrice(9999);
+        BindingResult result_2 = null;
+        HttpSession session = new MockHttpSession();
+        ShoppingCart cart = new ShoppingCart();
+        session.setAttribute(LoginController.ACCOUNT_ATTRIBUTE, new Integer(2));
+        session.setAttribute(ShoppingCartController.SHOPPING_CART_ATTRIBUTE_NAME, cart);
+        String expResult = "redirect:" + referer;
+        String result = controller.createOrder(referer, orderRequest, result_2, session, redirect);
+        assertEquals(expResult, result);
+        assertTrue(redirect.containsAttribute("exception"));
+        assertTrue(redirect.getFlashAttributes().get("exception") instanceof InsufficientFundsException);
+    }
+    
+    @Test
+    @Rollback(true)
+    public void testCreateOrder_ValidOrderRequest_AddPurchase() {
+        System.out.println("createOrder");
+        String referer = "";
+        OrderRequest orderRequest = new OrderRequest();
+        BindingResult result_2 = null;
+        HttpSession session = new MockHttpSession();
+        ShoppingCart cart = new ShoppingCart();
+        cart.addToCart(1, false);
+        session.setAttribute(LoginController.ACCOUNT_ATTRIBUTE, new Integer(1));
+        session.setAttribute(ShoppingCartController.SHOPPING_CART_ATTRIBUTE_NAME, cart);
+        String expResult = "redirect:/myAccountView.htm";
+        String result = controller.createOrder(referer, orderRequest, result_2, session, redirect);
+        assertEquals(expResult, result);
+        assertNull(session.getAttribute(ShoppingCartController.SHOPPING_CART_ATTRIBUTE_NAME));
+    }
+    
+    @Test
+    @Rollback(true)
+    public void testCreateOrder_ValidOrderRequest_AddRental() {
+        System.out.println("createOrder");
+        String referer = "";
+        OrderRequest orderRequest = new OrderRequest();
+        BindingResult result_2 = null;
+        HttpSession session = new MockHttpSession();
+        ShoppingCart cart = new ShoppingCart();
+        cart.addToCart(1, true);
+        session.setAttribute(LoginController.ACCOUNT_ATTRIBUTE, new Integer(1));
+        session.setAttribute(ShoppingCartController.SHOPPING_CART_ATTRIBUTE_NAME, cart);
+        String expResult = "redirect:/myAccountView.htm";
+        try{
+            String result = controller.createOrder(referer, orderRequest, result_2, session, redirect);
+            assertEquals(expResult, result);
+        }catch(Exception e){
+            fail("Exception should not be thrown");
+        }
+        assertNull(session.getAttribute(ShoppingCartController.SHOPPING_CART_ATTRIBUTE_NAME));
     }
 
     /**
@@ -137,16 +218,80 @@ public class OrderControllerTest {
      */
     @Test
     @Rollback(true)
-    public void testNewOrder() {
+    public void testNewOrder_NullCart() {
         System.out.println("newOrder");
         String referer = "";
-        Map<String, Object> model = null;
-        HttpSession session = null;
-        OrderController instance = new OrderController();
-        String expResult = "";
-        String result = instance.newOrder(referer, model, session);
+        Map<String, Object> model = new HashMap<String, Object>();
+        HttpSession session = new MockHttpSession();
+        String expResult = "redirect:" + referer;
+        String result = controller.newOrder(referer, model, session);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
+    }
+    @Test
+    @Rollback(true)
+    public void testNewOrder_ValidCart() {
+        System.out.println("newOrder");
+        String referer = "";
+        Map<String, Object> model = new HashMap<String, Object>();
+        HttpSession session = new MockHttpSession();
+        String expResult = "newOrder";
+        ShoppingCart cart = new ShoppingCart();
+        session.setAttribute(LoginController.ACCOUNT_ATTRIBUTE, new Integer(1));
+        session.setAttribute(ShoppingCartController.SHOPPING_CART_ATTRIBUTE_NAME, cart);
+        try{
+            String result = controller.newOrder(referer, model, session);
+            assertEquals(expResult, result);
+        }catch(Exception e){
+            fail("Exception should not be thrown");
+        }
+        assertTrue(model.containsKey("account"));
+        assertEquals(model.get("totalPrice"), 0);
+        assertEquals(model.get("uuid"), 1);
+    }
+    
+    @Test
+    @Rollback(true)
+    public void testNewOrder_ValidCart_NotActivatedId() {
+        System.out.println("newOrder");
+        String referer = "";
+        Map<String, Object> model = new HashMap<String, Object>();
+        HttpSession session = new MockHttpSession();
+        String expResult = "newOrder";
+        ShoppingCart cart = new ShoppingCart();
+        session.setAttribute(LoginController.ACCOUNT_ATTRIBUTE, new Integer(2));
+        session.setAttribute(ShoppingCartController.SHOPPING_CART_ATTRIBUTE_NAME, cart);
+        try{
+            String result = controller.newOrder(referer, model, session);
+            assertEquals(expResult, result);
+        }catch(Exception e){
+            fail("Exception should not be thrown");
+        }
+        assertTrue(model.containsKey("account"));
+        assertEquals(model.get("totalPrice"), 0);
+        assertEquals(model.get("uuid"), 2);
+    }
+    
+    @Test
+    @Rollback(true)
+    public void testNewOrder_ValidCart_InvalidId() {
+        System.out.println("newOrder");
+        String referer = "";
+        Map<String, Object> model = new HashMap<String, Object>();
+        HttpSession session = new MockHttpSession();
+        String expResult = "newOrder";
+        ShoppingCart cart = new ShoppingCart();
+        session.setAttribute(LoginController.ACCOUNT_ATTRIBUTE, new Integer(9999));
+        session.setAttribute(ShoppingCartController.SHOPPING_CART_ATTRIBUTE_NAME, cart);
+        try{
+            String result = controller.newOrder(referer, model, session);
+            assertEquals(expResult, result);
+        }catch(Exception e){
+            fail("Exception should not be thrown");
+        }
+        assertTrue(model.containsKey("account"));
+        assertEquals(model.get("totalPrice"), 0);
+        assertEquals(model.get("uuid"), 9999);
     }
 }

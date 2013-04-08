@@ -23,10 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author Daywalker
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:/test/contorller/controller-test.xml"})
-@TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true) 
-@Transactional
 public class ShoppingCartTest {
     
     public ShoppingCartTest() {
